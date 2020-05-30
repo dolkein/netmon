@@ -1,0 +1,279 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>Network Ping Monitor</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+	<script src="Chart/Chart.min.js"></script>
+	<script src="js/utils.js"></script>	
+	<style>
+		canvas {
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select: none;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="width:1000px">
+		<canvas id="chartPing"></canvas>
+	</div>
+	<br>
+	<div style="width:1000px">
+		<canvas id="chartSpeed"></canvas>
+	</div>
+	<br>
+	<script>
+
+		var ctx = document.getElementById('chartPing').getContext('2d');
+		ctx.canvas.width = 1000;
+		ctx.canvas.height = 150;
+
+		var color = Chart.helpers.color;
+		var cfg = {
+			data: {
+				datasets: [{
+					label: 'Network Monitor',
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.red,
+					data: [],
+					type: 'line',
+					pointRadius: 0,
+					fill: false,
+					lineTension: 0,
+					borderWidth: 2
+				}]
+			},
+				options: {
+					animation: {
+						duration: 0
+					},
+					scales: {
+						xAxes: [{
+							type: 'time',
+							distribution: 'series',
+						    time: {
+						         displayFormats: {
+						            'millisecond': 'MMM DD',
+						            'second': 'MMM DD',
+						            'minute': 'MMM DD',
+						            'hour': 'MMM DD',
+						            'day': 'MMM DD',
+						            'week': 'MMM DD',
+						            'month': 'MMM DD',
+						            'quarter': 'MMM DD',
+						            'year': 'MMM DD',
+						         },
+						    },
+							offset: true,
+							ticks: {
+								major: {
+									enabled: true,
+									fontStyle: 'bold'
+								},
+								source: 'data',
+								autoSkip: true,
+								autoSkipPadding: 75,
+								maxRotation: 0,
+								sampleSize: 100
+							},
+
+						}],
+						yAxes: [{
+							gridLines: {
+								drawBorder: false
+							},
+			                type: 'category',
+			                labels: ['Up', 'Down']
+						}]
+					},
+					tooltips: {
+						intersect: false,
+						mode: 'index',
+					}
+				}
+			};
+
+				const pingChart = new Chart(ctx, cfg);
+				var upCount = 0;
+				var totalCount = 0;
+				
+				const csvToPingChartData = csv => {
+				  const lines = csv.trim().split("\n");
+				  
+				  upCount = 0;
+				  totalCount = 0;
+				  
+				  return lines.map(line => {
+					totalCount++;
+				    const [date, state] = line.split(",");
+				    if (state.toLowerCase() == "up") upCount++;
+				    return {
+				      x: date.trim(),
+				      y: state
+				    };
+				  });
+				};
+
+				const fetchPingCSV = () => fetch("data/pingtest.csv")
+				  .then(data => data.text())
+				  .then(csv => {
+					pingChart.data.datasets[0].data = csvToPingChartData(csv);
+				    pingChart.data.datasets[0].label = ""+(upCount/totalCount * 100).toFixed(2)+"%";
+				    pingChart.update();
+				    setTimeout(fetchPingCSV, 60000); // Repeat every minute
+				  });
+
+				fetchPingCSV(); // First fetch!
+				
+		var ctxSpeed = document.getElementById('chartSpeed').getContext('2d');
+		ctxSpeed.canvas.width = 1000;
+		ctxSpeed.canvas.height = 150;
+
+		var cfgSpeed = {
+			data: {
+				datasets: [{
+					label: 'Download Speed (MB)',
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.red,
+					data: [],
+					type: 'line',
+					pointRadius: 0,
+					fill: false,
+					lineTension: 0,
+					borderWidth: 2,
+				    yAxisID: 'y-axis-download'
+				},
+				{
+					label: 'Upload Speed (MB)',
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.blue,
+					data: [],
+					type: 'line',
+					pointRadius: 0,
+					fill: false,
+					lineTension: 0,
+					borderWidth: 2,
+				    yAxisID: 'y-axis-upload'
+				}
+				]
+			},
+				options: {
+					animation: {
+						duration: 0
+					},
+					scales: {
+						xAxes: [{
+							type: 'time',
+							distribution: 'series',
+						    time: {
+						         displayFormats: {
+						            'millisecond': 'MMM DD',
+						            'second': 'MMM DD',
+						            'minute': 'MMM DD',
+						            'hour': 'MMM DD',
+						            'day': 'MMM DD',
+						            'week': 'MMM DD',
+						            'month': 'MMM DD',
+						            'quarter': 'MMM DD',
+						            'year': 'MMM DD',
+						         },
+						    },
+							offset: true,
+							ticks: {
+								major: {
+									enabled: true,
+									fontStyle: 'bold'
+								},
+								source: 'data',
+								autoSkip: true,
+								autoSkipPadding: 75,
+								maxRotation: 0,
+								sampleSize: 100
+							},
+
+						}],
+						yAxes: [{
+							type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+							display: true,
+							position: 'left',
+							id: 'y-axis-download',
+							gridLines: {
+								drawBorder: false
+							},
+							scaleLabel: {
+                                display: true,
+                                labelString: 'Download'
+                            }
+						},
+						{
+							type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+							display: true,
+							position: 'right',
+							id: 'y-axis-upload',
+							gridLines: {
+							    drawOnChartArea: false,
+								drawBorder: false
+							},
+							scaleLabel: {
+                                display: true,
+                                labelString: 'Upload'
+                            }
+						}
+						]
+					},
+					tooltips: {
+						intersect: false,
+						mode: 'index',
+					}
+				}
+			};
+
+				const speedChart = new Chart(ctxSpeed, cfgSpeed);
+				
+				const csvToDownloadSpeedChartData = csv => {
+				  const lines = csv.trim().split("\n");			  
+				  return lines.map(line => {
+				  
+				  line = line.substring(line.lastIndexOf('"'));
+				  line = line.substring(line.indexOf(",")+1);
+				  
+				  const [date,idk,ping,down,up,empty,ip] = line.split(",");
+				  return {
+				      x: date.trim(),
+				      y: (down/1024000).toFixed(2)
+				    };
+				  });
+				};
+				
+			    const csvToUploadSpeedChartData = csv => {
+				  const lines = csv.trim().split("\n");			  
+				  return lines.map(line => {
+				  
+				  line = line.substring(line.lastIndexOf('"'));
+				  line = line.substring(line.indexOf(",")+1);
+				  
+				  const [date,idk,ping,down,up,empty,ip] = line.split(",");
+				  return {
+				      x: date.trim(),
+				      y: (up/1024000).toFixed(2)
+				    };
+				  });
+				};
+
+				const fetchSpeedCSV = () => fetch("data/speedtest.csv")
+				  .then(data => data.text())
+				  .then(csv => {
+					speedChart.data.datasets[0].data = csvToDownloadSpeedChartData(csv);
+					speedChart.data.datasets[1].data = csvToUploadSpeedChartData(csv);
+				    speedChart.update();
+				    //setTimeout(fetchSpeedCSV, 60000); // Repeat every minute
+				  });
+
+				fetchSpeedCSV(); // First fetch!
+
+	</script>
+</body>
+
+</html>
