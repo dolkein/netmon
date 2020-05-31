@@ -52,6 +52,7 @@ sudo chmod 777 /etc/netmon/data
 echo "Generating initial data (30 seconds) ..."
 sudo /etc/netmon/speedtest.sh
 sudo /etc/netmon/pingtest.sh
+sudo chmod 777 /etc/netmon/data/*.csv
 
 CHECK=$(crontab -l | egrep -v "^(#|$)" | grep -q 'speedtest.sh'; echo $?)
 if [ "$CHECK" -eq "1" ]; then
