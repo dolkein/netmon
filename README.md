@@ -20,6 +20,13 @@ Default file locations
 /var/www/html/netmon/ - simple web page and javascript 
 crontab - scripts to run speedtest and ping test to collect results.
 
+Uninstall it !
+cd scripts folder
+chmod 755 uninstall.sh
+sudo ./uninstall.sh
+
+Note: delete all the downloaded files 
+
 Developer Note:
 
 Create clean ZIP on a Mac

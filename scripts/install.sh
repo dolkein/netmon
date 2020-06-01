@@ -1,5 +1,7 @@
 #!/bin/sh
 
+cwd=$(pwd)
+
 DIR="/var/www/html/"
 if [ -d "$DIR" ]; then
   echo "Found web server folder in ${DIR}..."
@@ -32,7 +34,6 @@ if [ -d "$DIR" ]; then
 else
   echo "Creating netmon web folder at ${DIR}..."
   sudo mkdir ${DIR}
-  sudo mkdir ${DIR}/data
 fi
 
 echo "Copying files into /var/www/html ..."
@@ -45,7 +46,9 @@ sudo cp  ../scripts/pingtest.sh /etc/netmon/.
 sudo chmod 755 /etc/netmon/pingtest.sh
 sudo chmod 755 /etc/netmon/speedtest.sh
 
-sudo ln -s /etc/netmon/data /var/www/html/netmon/data
+cd /var/www/html/netmon
+sudo ln -s /etc/netmon/data data
+cd $cwd
 
 sudo chmod 777 /etc/netmon/data
 
@@ -58,7 +61,7 @@ CHECK=$(crontab -l | egrep -v "^(#|$)" | grep -q 'speedtest.sh'; echo $?)
 if [ "$CHECK" -eq "1" ]; then
     echo "Installing crontab speedtest..."
     crontab -l > mycron
-    echo '30 * * * * /etc/netmon/speedtest.sh' >> mycron
+    echo '*/15 * * * * /etc/netmon/speedtest.sh' >> mycron
     crontab mycron
     rm mycron
 else 
@@ -75,3 +78,5 @@ if [ "$CHECK" -eq "1" ]; then
 else 
     echo "Already setup for crontab pingtest..."
 fi
+
+
