@@ -1,9 +1,13 @@
 
 Simple Network Monitor Web Site
 
-uses cron to run ping and speed tests, saving data in /etc/netmon.  Needs a web server to chart the results over time.  Very basic stuff here.  Wanted to know how my network was doing over time.
+Built for headless Raspian Pi 
+
+Uses cron to run ping and speed tests, saving data in /etc/netmon.  Needs a web server to chart the results over time.  Very basic stuff here.  Wanted to know how my network was doing over time.
 
 ![Sample web data](https://github.com/dolkein/netmon/screenshot.png
+
+Add remote.it to easily enable for remote access. Othewrwise use LAN based access eg http://192.168.1.193/netmon/
 
 Prerequisites:
 Web Server with /var/www/html root folder (suggest lighthttp)
